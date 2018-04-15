@@ -53,7 +53,7 @@ def contains(s, word_list):
 
 current_post = 961
 # TODO: search in time range
-for cid in range(961, 959, -1):
+for cid in range(961, 950, -1):
 	print("\n")
 	print("POST ID: " + str(cid))
 	post = course.get_post(cid)
@@ -97,18 +97,6 @@ all_messages_df['no_punc']=[re.sub(punct_re, " ", text) for text in all_messages
 #convert content into a tidy format to make sentiments easy to calculate. index is cid of the post
 tidy_format = []
 print(all_messages_df['no_punc'])
-# for index, row in all_messages_df.iterrows():
-# 	text = all_messages_df['no_punc'][] 
-# 	print("text")
-# 	print(text)
-# 	split = text.split()
-# 	for i in range(len(split)):
-# 		word = split[i]
-# 		new_row = {} 
-# 		new_row['index'] = index 
-# 		new_row['num'] = i 
-# 		new_row['word'] = word 
-# 		tidy_format.append(new_row)
 
 for text, cid in zip(all_messages_df['no_punc'], all_messages_df['cids']):
 	split = text.split()
@@ -134,22 +122,29 @@ print('lex_polarities')
 print(lex_polarities.head())
 
 #find the sentiment of each tweet: we can join the table with the lexicon table.
-merged = tidy_format.merge(lex_polarities, left_on='word', right_index=True) 
+merged = tidy_format.merge(lex_polarities, how='left', left_on='word', right_index=True) 
 merged.sort_index(inplace=True)
+merged.fillna(0.0)
 grouped = merged.groupby('index')['polarity'].sum()
-
-print("\n")
-print('grouped')
-print(grouped)
-
-all_messages_df['polarity'][all_messages_df['cids']==grouped['index']] = grouped['index']
-# all_messages_df['polarity'].fillna(0, inplace=True)
 
 print("\n")
 print('merged')
 print(merged.head())
 
+print("\n")
+print('grouped')
+print(grouped)
+
+
+all_messages_df['polarity'] = grouped.values
+# all_messages_df['polarity'][all_messages_df['cids']==grouped['index']] = grouped['index']
+# all_messages_df['polarity'].fillna(0, inplace=True)
+
+
+print("all_messages_df")
 print(all_messages_df)
+
+print("polarity")
 print(all_messages_df['polarity'])
 
 # print(course.get_post(-1)['history'])
