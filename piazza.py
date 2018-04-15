@@ -3,27 +3,49 @@ from piazza_api.rpc import PiazzaRPC
 import json
 import pandas as pd
 import re
+from datetime import datetime
 # from bs4 import BeautifulSoup
 
 # p = PiazzaRPC("jcfrsqcwoyyi5")
 # p.user_login()
 # print(json.dumps(p.content_get(961), indent=2))
 
+'''
+	Variables
+'''
+
+
 p = Piazza()
 p.user_login()
 user_profile = p.get_user_profile()
-course = p.network("jcfrsqcwoyyi5")
-course.get_post(961)
+# course = p.network("jcfrsqcwoyyi5") # CS186
+# course = p.network("j5vqc3j229b6u7") # CS170
+course = p.network("ir6ikxxrjtm3j5") # CS61b
+
 posts = course.iter_all_posts(limit=10)
 # for post in posts:
 # 	print(json.dumps(post, indent=2))
 
 # search_words = ["System R", "Grace Hash Join", "Query Optimization", "IO", "hash join"]
-search_words = ["hash join", "table scan", "hash", "join", "table", "sort merge join"]
+# search_words = ["hash join", "table scan", "sort merge join", "system r", "dependency graph", "hw 4", "query optimization"]
+# search_words = ["max flow", "dynamic programming", "dp", "linear programming", "np", "reduction", "greedy", "recurrence", "bipartite"]
+search_words = ["asymptotic", "disjoint set", "tree", "hash", "heap", "graph", "traversal", "dynamic programming", "sort", "reduction"]
+
+
+
+start_post = 5668
+end_post = 5500
+
+n = 50
 
 cids_to_content = {} #dictionary in the form {cid: message content + ' ' + subject content})
 
+# Earliest post date
+year = 2017
+month = 12
+day = 01
 
+# Return object
 result = {}
 '''
 Format for result
@@ -33,15 +55,14 @@ Format for result
 		porportion_posts: float
 	}
 }
-
 '''
 
 for word in search_words:
 	result[word] = {
 					'total_sentiment': 0.0,
-					'avg_sentiment': 0.0, 
+					'average_sentiment': 0.0, 
 					'number_posts': 0, 
-					'porportion_posts': 0.0}
+					'proportion_posts': 0.0}
 '''
 	Helper Functions
 '''
@@ -56,55 +77,38 @@ def contains(s, word_list):
         print("{}: {}".format(key, value))
     return rtn
 
-# def post_range(course, post_ID, year, month, day):
-#     assert len(year)==4
-#     assert len(month)==2
-#     assert len(day)==2
-#     try:
-#         range_beginning = datetime.strptime("{} {} {}".format(year,month,day), '%Y %m %d')
-#         print(range_beginning)
-#     except:
-#         print("enter a proper date!!!")
-#     latest_date = datetime.MAXYEAR
-#     # end_range_cid = -1
-#     while(range_beginning<latest_date):
-#         try:
-#             curr_post = course.get_post(post_ID)
-#             latest_date_string = curr_post['change_log']['when']
-#             latest_date = datetime.strptime(latest_date_string,"%Y-%m-%dT%H:%M:%S")
-#             process(curr_post)
-#             post_ID -= 1
-#         except:
-#             print("something is fucked up")
-#     return post_ID
-
-'''
-	variables
-'''
-
-current_post = 961
-
-n = 15
+current_post = start_post
 
 # TODO: search in time range
-for cid in range(current_post, current_post - n, -1):
+# for cid in range(current_post, current_post - n, -1):
+# while (current_post >= end_post):
+for current_post in range(start_post, end_post, -1):
 	print("\n")
-	print("POST ID: " + str(cid))
-	post = course.get_post(cid)
-	history = post['history']
-	subject = history[0]['subject']
-	content = history[0]['content']
-	# entry = BeautifulSoup(content + ' ' + subject, "lxml").get_text()
-	cids_to_content[str(cid)] =  content + ' ' + subject #add post id : content to the dictionary
-	# print(post)
-	# print(subject)
-	# print(content)
+	print("POST ID: " + str(current_post))
+	try:
+		post = course.get_post(current_post)
+		history = post['history']
+		subject = history[0]['subject']
+		content = history[0]['content']
+		entry = re.sub("<.*?>", "", content + ' ' + subject)
+		entry = re.sub("&#34;", "",entry)
+		# entry = BeautifulSoup(content + ' ' + subject, "lxml").get_text()
+		cids_to_content[str(current_post)] = entry #add post id : content to the dictionary
+		current_post -= 1
+		n += 1
 
-	# contained_search_words = contains(subject + " " + content, search_words)
-	# for contained in contained_search_words:
-	# 	print(contained)
+		# print(post)
+		# print(subject)
+		# print(content)
 
-	# print(json.dumps(post['history'], indent=2))
+		# contained_search_words = contains(subject + " " + content, search_words)
+		# for contained in contained_search_words:
+		# 	print(contained)
+
+		# print(json.dumps(post['history'], indent=2))
+	except:
+		current_post -= 1
+		continue
 
 all_messages_df = pd.DataFrame({'cids':list(cids_to_content.keys()), 'content':list(cids_to_content.values())})
 all_messages_df.set_index('cids')
@@ -192,8 +196,10 @@ for index, row in all_messages_df.iterrows():
 			result[search_word]['number_posts'] += 1
 
 for key in result.keys():
-	result[key]['average_sentiment'] = float(result[key]['total_sentiment']) / float(result[key]['number_posts'])
-	result[key]['porportion_posts'] = float(result[key]['number_posts']) / float(n)
+	if result[key]['number_posts'] != 0:
+		result[key]['average_sentiment'] = float(result[key]['total_sentiment']) / float(result[key]['number_posts'])
+	if n != 0:
+		result[key]['proportion_posts'] = float(result[key]['number_posts']) / float(n)
 
 print(json.dumps(result, indent=2))
 

@@ -1,0 +1,15 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>boom boom Piazza room</title>
+</head>
+<body>
+  <form action="/action_page.php">
+    Topics: <input type="text" value="comma separated list">
+    Course URL: <input type="text">
+    Post CID: <input type="number">
+    Date: <input type="date" name="date">
+    <input type="submit" value="Analyze">
+</form>
+</body>
+<html>

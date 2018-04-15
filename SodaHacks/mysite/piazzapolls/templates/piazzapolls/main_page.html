@@ -1,0 +1,24 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>boom boom Piazza room</title>
+</head>
+<body>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<h1>{{ information.pk }}</h1>
+<form action="{% url 'piazzapolls:analyze' information.id %}" method="post">
+{% csrf_token %}
+<h2>What is the earliest date you wish to consider?</h2>
+<input type="date" name="answer1" id="answer1" value=""/><br>
+<h2>What is the last CID you wish to consider?</h2>
+<input type="number" name="answer2" id="answer2" value=""/><br>
+<h2>What is the course URL on Piazza?</h2>
+<input type="text" name="answer3" id="answer3" value=""/><br>
+<h2>Enter keywords as a comma separated list...</h2>
+<input type="text" name="answer4" id="answer4" value=""/><br>
+<input type="submit" value="Analyze" />
+</form>
+
+<p>{{ information.first_date }}<br>{{ information.last_CID }}<br>{{ information.course_ID }}</p>

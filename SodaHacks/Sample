@@ -1,0 +1,12 @@
+from piazza_api import Piazza
+from piazza_api.rpc import PiazzaRPC
+import json
+import numpy as np
+import pandas as pd
+
+p=Piazza()
+p.user_login()
+user_profile=p.get_user_profile()
+course=p.network("jaepthp7wf44nh")
+post=course.get_post(-1)
+print(post['history']['content'])
