@@ -78,7 +78,7 @@ def results(request, information_id):
 
     # start_post = 5668
     start_post = information.last_CID
-    end_post = 5400
+    end_post = max(0, start_post - 300)
 
     n = 50
 
