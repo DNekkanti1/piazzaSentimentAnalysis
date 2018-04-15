@@ -59,6 +59,9 @@ def results(request, information_id):
     p = Piazza()
     email = information.email
     password = information.password
+    print(email)
+    print(password)
+
     p.user_login(email = email, password = password)
     user_profile = p.get_user_profile()
     # course = p.network("jcfrsqcwoyyi5") # CS186
@@ -75,7 +78,7 @@ def results(request, information_id):
 
     # start_post = 5668
     start_post = information.last_CID
-    end_post = 5650
+    end_post = 5400
 
     n = 50
 
@@ -129,8 +132,8 @@ def results(request, information_id):
     # for cid in range(current_post, current_post - n, -1):
     # while (current_post >= end_post):
     for current_post in range(start_post, end_post, -1):
-        print("\n")
-        print("POST ID: " + str(current_post))
+        # print("\n")
+        # print("POST ID: " + str(current_post))
         try:
             post = course.get_post(current_post)
             history = post['history']
@@ -144,8 +147,8 @@ def results(request, information_id):
             n += 1
 
             # print(post)
-            print(subject)
-            print(content)
+            # print(subject)
+            # print(content)
 
             # print(json.dumps(post['history'], indent=2))
         except:
@@ -249,19 +252,20 @@ def results(request, information_id):
     print(json.dumps(result, indent=2))
 
     result = pd.DataFrame.from_dict(result, orient='index')
-    # result.drop('total_sentiment')
-    # result.sort_values('average_sentiment')
+    result = result.drop('total_sentiment', axis=1)
+    result = result.sort_values('average_sentiment')
 
     print(result)
 
-    # result = result.to_html()
+    result = result.to_html()
 
     # return render(request, 'piazzapolls/results.html', {
     #                                 'information': information,
     #                                 })
 
     return render(request, 'piazzapolls/results.html', {
-                                    'information': result,
+                                    'information': information,
+                                    'result': result
                                     })
 
 
