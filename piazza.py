@@ -3,6 +3,7 @@ from piazza_api.rpc import PiazzaRPC
 import json
 import pandas as pd
 import re
+# from bs4 import BeautifulSoup
 
 # p = PiazzaRPC("jcfrsqcwoyyi5")
 # p.user_login()
@@ -18,7 +19,7 @@ posts = course.iter_all_posts(limit=10)
 # 	print(json.dumps(post, indent=2))
 
 # search_words = ["System R", "Grace Hash Join", "Query Optimization", "IO", "hash join"]
-search_words = ["hash", "join"]
+search_words = ["hash join", "table scan", "hash", "join", "table", "sort merge join"]
 
 cids_to_content = {} #dictionary in the form {cid: message content + ' ' + subject content})
 
@@ -36,10 +37,14 @@ Format for result
 '''
 
 for word in search_words:
-	result[word] = {'avg_sentiment': 0.0, 
+	result[word] = {
+					'total_sentiment': 0.0,
+					'avg_sentiment': 0.0, 
 					'number_posts': 0, 
 					'porportion_posts': 0.0}
-
+'''
+	Helper Functions
+'''
 def contains(s, word_list):
     rtn = {}
     for keyword in word_list:
@@ -51,23 +56,53 @@ def contains(s, word_list):
         print("{}: {}".format(key, value))
     return rtn
 
+# def post_range(course, post_ID, year, month, day):
+#     assert len(year)==4
+#     assert len(month)==2
+#     assert len(day)==2
+#     try:
+#         range_beginning = datetime.strptime("{} {} {}".format(year,month,day), '%Y %m %d')
+#         print(range_beginning)
+#     except:
+#         print("enter a proper date!!!")
+#     latest_date = datetime.MAXYEAR
+#     # end_range_cid = -1
+#     while(range_beginning<latest_date):
+#         try:
+#             curr_post = course.get_post(post_ID)
+#             latest_date_string = curr_post['change_log']['when']
+#             latest_date = datetime.strptime(latest_date_string,"%Y-%m-%dT%H:%M:%S")
+#             process(curr_post)
+#             post_ID -= 1
+#         except:
+#             print("something is fucked up")
+#     return post_ID
+
+'''
+	variables
+'''
+
 current_post = 961
+
+n = 15
+
 # TODO: search in time range
-for cid in range(961, 950, -1):
+for cid in range(current_post, current_post - n, -1):
 	print("\n")
 	print("POST ID: " + str(cid))
 	post = course.get_post(cid)
 	history = post['history']
 	subject = history[0]['subject']
 	content = history[0]['content']
-	cids_to_content[str(cid)] = content + ' ' + subject #add post id : content to the dictionary
+	# entry = BeautifulSoup(content + ' ' + subject, "lxml").get_text()
+	cids_to_content[str(cid)] =  content + ' ' + subject #add post id : content to the dictionary
 	# print(post)
 	# print(subject)
 	# print(content)
 
-	contained_search_words = contains(subject + " " + content, search_words)
-	for contained in contained_search_words:
-		print(contained)
+	# contained_search_words = contains(subject + " " + content, search_words)
+	# for contained in contained_search_words:
+	# 	print(contained)
 
 	# print(json.dumps(post['history'], indent=2))
 
@@ -146,6 +181,25 @@ print(all_messages_df)
 
 print("polarity")
 print(all_messages_df['polarity'])
+
+
+for index, row in all_messages_df.iterrows():
+	for search_word in search_words:
+		text = row['no_punc']
+		polarity = row['polarity']
+		if search_word in text:
+			result[search_word]['total_sentiment'] += polarity
+			result[search_word]['number_posts'] += 1
+
+for key in result.keys():
+	result[key]['average_sentiment'] = float(result[key]['total_sentiment']) / float(result[key]['number_posts'])
+	result[key]['porportion_posts'] = float(result[key]['number_posts']) / float(n)
+
+print(json.dumps(result, indent=2))
+
+# contained_search_words = contains(subject + " " + content, search_words)
+# 	for contained in contained_search_words:
+# 		print(contained)
 
 # print(course.get_post(-1)['history'])
 
