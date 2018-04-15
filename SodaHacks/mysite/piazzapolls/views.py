@@ -244,6 +244,14 @@ def results(request, information_id):
 
     print(json.dumps(result, indent=2))
 
+    result = pd.DataFrame.from_dict(result, orient='index')
+    # result.drop('total_sentiment')
+    # result.sort_values('average_sentiment')
+
+    print(result)
+
+    # result = result.to_html()
+
     # return render(request, 'piazzapolls/results.html', {
     #                                 'information': information,
     #                                 })
