@@ -31,6 +31,8 @@ def main_page(request):
 def analyze(request, information_id):
     information = get_object_or_404(Information, pk=information_id)
     try:
+        email = request.POST['email']
+        password = request.POST['password']
         first_date = request.POST['answer1']
         last_CID = request.POST['answer2']
         course_ID = request.POST['answer3']
@@ -41,6 +43,8 @@ def analyze(request, information_id):
                                     'error_message': "faulty input"
                                     })
     else:
+        information.email = email
+        information.password = password
         information.first_date = first_date
         information.last_CID = last_CID
         information.course_ID = course_ID
@@ -53,8 +57,8 @@ def results(request, information_id):
     #THE "BACKEND" WORD HAPPENS HERE
 
     p = Piazza()
-    email = "edmund.tian@berkeley.edu"
-    password = "edmund"
+    email = information.email
+    password = information.password
     p.user_login(email = email, password = password)
     user_profile = p.get_user_profile()
     # course = p.network("jcfrsqcwoyyi5") # CS186

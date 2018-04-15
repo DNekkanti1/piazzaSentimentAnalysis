@@ -26,6 +26,8 @@ class DateResponse(models.Model):
             return False
 
 class Information(models.Model):
+    email = models.CharField(max_length=200)
+    password = models.CharField(max_length=200)
     first_date = models.DateField()
     last_CID = models.IntegerField()
     course_ID = models.CharField(max_length=200)
